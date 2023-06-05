@@ -76,15 +76,18 @@ public class WeekCalendarServiceBE {
             day.setShabath(jewishCalendar.getDayOfWeek() == 7);
             day.setRoshChodesh(hebrewDateFormatter.formatRoshChodesh(jewishCalendar));
             day.setYomTovName(hebrewDateFormatter.formatYomTov(jewishCalendar));
-            day.setCandleLighting((jewishCalendar.hasCandleLighting()) ?
-                    LocalDateTime.ofInstant(zmanimCalendar.getCandleLighting().toInstant(), ZoneId.systemDefault()).format(timeFormatter)
-                    : EMPTY);
-            day.setTzaisSabath((jewishCalendar.getDayOfWeek() == 7 && !jewishCalendar.hasCandleLighting()) ?
-                    LocalDateTime.ofInstant(zmanimCalendar.getTzais().toInstant(), ZoneId.systemDefault()).format(timeFormatter)
-                    : EMPTY);
-            day.setTzaisYomTov((jewishCalendar.isYomTovAssurBemelacha() && jewishCalendar.getDayOfWeek() != 7 && !jewishCalendar.hasCandleLighting()) ?
-                    LocalDateTime.ofInstant(zmanimCalendar.getTzais().toInstant(), ZoneId.systemDefault()).format(timeFormatter)
-                    : EMPTY);
+            if(jewishCalendar.hasCandleLighting()){
+                day.setCandleLighting(LocalDateTime.ofInstant(
+                        zmanimCalendar.getCandleLighting().toInstant()
+                        , ZoneId.systemDefault()).format(timeFormatter));
+
+            }
+            if((jewishCalendar.getDayOfWeek() == 7 && !jewishCalendar.hasCandleLighting())){
+                day.setTzaisSabath(LocalDateTime.ofInstant(zmanimCalendar.getTzais().toInstant(), ZoneId.systemDefault()).format(timeFormatter));
+            }
+            if((jewishCalendar.isYomTovAssurBemelacha() && jewishCalendar.getDayOfWeek() != 7 && !jewishCalendar.hasCandleLighting())){
+                day.setTzaisYomTov(LocalDateTime.ofInstant(zmanimCalendar.getTzais().toInstant(), ZoneId.systemDefault()).format(timeFormatter));
+            }
             days.add(day);
             jewishCalendar.setDate(jewishCalendar.getLocalDate().plusDays(1));
         }
@@ -111,7 +114,7 @@ public class WeekCalendarServiceBE {
         StringBuilder sb = new StringBuilder();
         sb.append(WEEK_CAL_TITLE)
                 .append(SPACE)
-                .append(TextUtils.updateDirection(year));
+                .append(TextUtils.setDirectionRtl(year));
 
 
         return sb.toString();
