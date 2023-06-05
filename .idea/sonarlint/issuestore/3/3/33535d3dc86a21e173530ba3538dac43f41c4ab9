@@ -1,0 +1,16 @@
+
+ä
+java:S1130"tRemove the declaration of thrown exception 'java.net.URISyntaxException', as it cannot be thrown from method's body.(∂ÊÅ≥
+V	java:S125""<This block of commented-out lines of code should be removed.(ˆÒÒ«˛ˇˇˇˇ
+S	java:S1061"9Replace this use of System.out or System.err by a logger.(ÍÁ€∞˛ˇˇˇˇ
+Q	java:S1255"<This block of commented-out lines of code should be removed.(˚ÂôŒ
+U
+java:S1128":Remove this unused import 'java.io.FileNotFoundException'.(∑Óôù˘ˇˇˇˇ
+I
+java:S1128".Remove this unused import 'java.util.HashMap'.(ôòîÄ˘ˇˇˇˇ
+N
+java:S1144?"3Remove this unused private "addTableHeader" method.(ù¥‚ë˙ˇˇˇˇ
+G
+java:S1144J",Remove this unused private "addRows" method.(Àø°ﬁˇˇˇˇˇ
+M
+java:S1144P"2Remove this unused private "addCustomRows" method.(®í¡ë¸ˇˇˇˇ

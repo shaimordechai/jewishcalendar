@@ -1,0 +1,10 @@
+
+k	java:S117v"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(²‹´¨ûÿÿÿÿ
+f	java:S117w"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(„™˜Õ
+X
+java:S2184Š"ACast one of the operands of this division operation to a "float".(ÖÝ†Ì
+’
+java:S1130%"|Remove the declaration of thrown exception 'com.itextpdf.text.DocumentException', as it cannot be thrown from method's body.(Óîûý
+V	java:S125G"<This block of commented-out lines of code should be removed.(²™çÿÿÿÿÿ
+Q	java:S125O"<This block of commented-out lines of code should be removed.(°ÍÚ¦
+T	java:S106„"9Replace this use of System.out or System.err by a logger.(êçÛ°þÿÿÿÿ
