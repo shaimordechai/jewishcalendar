@@ -1,16 +1,16 @@
 package org.example.be.service;
 
+import com.ibm.icu.util.HebrewCalendar;
 import com.kosherjava.zmanim.ZmanimCalendar;
 import com.kosherjava.zmanim.hebrewcalendar.HebrewDateFormatter;
 import com.kosherjava.zmanim.hebrewcalendar.JewishCalendar;
+import com.kosherjava.zmanim.hebrewcalendar.JewishDate;
 import com.kosherjava.zmanim.util.GeoLocation;
-import org.example.dto.DayBE;
-import org.example.dto.WeekBE;
-import org.example.dto.WeekCalBE;
+import org.example.dto.*;
 import org.example.enums.Region;
 import org.example.utils.TextUtils;
 
-import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,41 +26,75 @@ public class WeekCalendarServiceBE {
 
     private final String WEEK_CAL_TITLE = "יעובש חול תנשל";
     private final String SPACE = " ";
-    private final String EMPTY = "";
     private final int WEEK_SIZE = 7;
     private final AtomicInteger counter = new AtomicInteger();
-    Locale hebrewLocale = new Locale("he", "IL"); // Hebrew locale
+    private final Locale hebrewLocale = new Locale("he", "IL"); // Hebrew locale
+    private final Locale locale = Locale.getDefault();
+    private final SimpleDateFormat dayAndMonthFormatter = new SimpleDateFormat("dd/MM");
     private final DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMMM", hebrewLocale);
     private final DateTimeFormatter yearFormatter = DateTimeFormatter.ofPattern("YYYY", hebrewLocale);
-    private final Locale locale = Locale.getDefault();
     private final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE", locale);
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH.mm", locale);
     private final HebrewDateFormatter hebrewDateFormatter = new HebrewDateFormatter();
+    private final JewishCalendar jewishCalendar = new JewishCalendar();
+    private final  ZmanimCalendar zmanimCalendar = new ZmanimCalendar();
+    private final  Calendar cal = Calendar.getInstance();
 
-    public WeekCalBE createWeekBECal(int year, String regionName){
+    public WeekCalBE createWeekBECal(int year, String regionName, List<EventBE> eventBEList){
         WeekCalBE res = new WeekCalBE();
+        resetCalendar();
         hebrewDateFormatter.setHebrewFormat(true);
         List<WeekBE> weekBEList = new ArrayList<>();
         Region region = Region.fromName(regionName);
         GeoLocation geoLocation = new GeoLocation(region.getName(), region.getLatitude(), region.getLongitude(), region.getElevation(), region.getTimeZone());
-        JewishCalendar jewishCalendar = new JewishCalendar(year, 7, 1);
+        zmanimCalendar.setGeoLocation(geoLocation);
+        zmanimCalendar.setCandleLightingOffset(region.getCandleLightingOffset());
+
         jewishCalendar.setInIsrael(region.isInIsrael());
+        jewishCalendar.setJewishYear(year);
+        jewishCalendar.setJewishMonth(7);
+        jewishCalendar.setJewishDayOfMonth(1);
         LocalDate localDate = jewishCalendar.getLocalDate();
         LocalDate firstDayOfCalendar = localDate.with(DayOfWeek.MONDAY).minusDays(1);
         int numDaysInYear = jewishCalendar.getDaysInJewishYear();
         LocalDate lastDayOfCalendar = localDate.plusDays(numDaysInYear).with(DayOfWeek.SATURDAY);
-
         jewishCalendar.setDate(firstDayOfCalendar);
-        ZmanimCalendar zmanimCalendar = new ZmanimCalendar(geoLocation);
-        zmanimCalendar.setCandleLightingOffset(40.0);
+
+       /* Map<Date, List<EventBE>> eventBEMap = eventBEList.stream()
+                .collect(Collectors.groupingBy(EventBE::getDate));*/
+        HebrewCalendar hc = new HebrewCalendar();
+       /* eventBEMap.keySet().forEach(key -> {
+            hc.setTime(key);
+            hc.roll(Calendar.YEAR, year - hc.get(Calendar.YEAR));
+            cal.setTime(hc.getTime());
+            key.setTime(cal.getTime().getTime());
+        });*/
+
+       /* Map<String, List<EventBE>> map = eventBEMap.entrySet().stream()
+                .collect(Collectors.toMap(item -> dayAndMonthFormatter.format(item.getKey()), Map.Entry::getValue));*/
+
+        Map<String, List<EventBE>> map1 = new HashMap<>();
+        eventBEList.forEach(item -> {
+            hc.setTime(item.getDate());
+            hc.roll(Calendar.YEAR, year - hc.get(Calendar.YEAR));
+            cal.setTime(hc.getTime());
+            String key = dayAndMonthFormatter.format(cal.getTime());
+            List<EventBE> events = map1.get(key);
+            if(events != null){
+                events.add(item);
+            } else {
+                events = new ArrayList<>();
+                events.add(item);
+                map1.put(key, events);
+            }
+        });
 
 
         List<DayBE> days = new ArrayList<>();
-
         while (jewishCalendar.getLocalDate().isBefore(lastDayOfCalendar.plusDays(1))){
             zmanimCalendar.setCalendar(jewishCalendar.getGregorianCalendar());
             DayBE day = new DayBE();
-            day.setDate(Date.valueOf(jewishCalendar.getLocalDate()));
+            day.setDate(jewishCalendar.getGregorianCalendar().getTime());
             day.setYear(jewishCalendar.getLocalDate().format(yearFormatter));
             day.setMonth(jewishCalendar.getLocalDate().format(monthFormatter));
             day.setMonthHeb(hebrewDateFormatter.formatMonth(jewishCalendar));
@@ -88,12 +122,28 @@ public class WeekCalendarServiceBE {
             if((jewishCalendar.isYomTovAssurBemelacha() && jewishCalendar.getDayOfWeek() != 7 && !jewishCalendar.hasCandleLighting())){
                 day.setTzaisYomTov(LocalDateTime.ofInstant(zmanimCalendar.getTzais().toInstant(), ZoneId.systemDefault()).format(timeFormatter));
             }
+            if(jewishCalendar.getJewishYear() == year){
+                day.setEventFEList(getEvents(jewishCalendar, eventBEList));
+            }
+
+            List<EventBE> events = map1.get(dayAndMonthFormatter.format(day.getDate()));
+            if(events != null){
+                List<EventFE> eventFEList = new ArrayList<>();
+                events.forEach(item -> {
+                    EventFE eventFE = new EventFE();
+                    eventFE.setPath(item.getPath());
+                    int years = year - new JewishDate(item.getDate()).getJewishYear();
+                    eventFE.setText(TextUtils.createEventText(item, years));
+                    eventFEList.add(eventFE);
+                });
+                day.setEventFEList(eventFEList);
+            }
             days.add(day);
             jewishCalendar.setDate(jewishCalendar.getLocalDate().plusDays(1));
         }
 
         Collection<List<DayBE>> weeks = days.stream()
-                .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / WEEK_SIZE))
+                .collect(Collectors.groupingBy(item -> counter.getAndIncrement() / WEEK_SIZE))
                 .values();
 
         weeks.forEach(w -> {
@@ -108,6 +158,21 @@ public class WeekCalendarServiceBE {
         res.setTitle(createTitle(hebrewDateFormatter.formatHebrewNumber(year)));
         return res;
 
+    }
+
+    private void resetCalendar() {
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+    }
+
+    private List<EventFE> getEvents(JewishCalendar jewishCalendar, List<EventBE> eventBEList) {
+        List<EventFE> res = new ArrayList<>();
+        eventBEList.forEach(item -> {
+        });
+
+        return res;
     }
 
     private String createTitle(String year) {

@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.TimeZone;
 
 public enum Region {
-    JERUSALEM("ירושלים", 31.76832, 35.21371, 769.0, TimeZone.getTimeZone("Asia/Jerusalem"), true);
+    JERUSALEM("ירושלים", 31.76832, 35.21371, 769.0, TimeZone.getTimeZone("Asia/Jerusalem"), true, 40.0);
 
     private String name;
     private double latitude;
@@ -13,14 +13,16 @@ public enum Region {
     private double elevation;
     private TimeZone timeZone;
     private boolean inIsrael;
+    private double candleLightingOffset;
 
-    Region(String name, double latitude, double longitude, double elevation, TimeZone timeZone, boolean inIsrael) {
+    Region(String name, double latitude, double longitude, double elevation, TimeZone timeZone, boolean inIsrael, double candleLightingOffset) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
         this.elevation = elevation;
         this.timeZone = timeZone;
         this.inIsrael = inIsrael;
+        this.candleLightingOffset = candleLightingOffset;
     }
 
     public static Region fromName(String name) {
@@ -76,5 +78,13 @@ public enum Region {
 
     public void setInIsrael(boolean inIsrael) {
         this.inIsrael = inIsrael;
+    }
+
+    public double getCandleLightingOffset() {
+        return candleLightingOffset;
+    }
+
+    public void setCandleLightingOffset(double candleLightingOffset) {
+        this.candleLightingOffset = candleLightingOffset;
     }
 }

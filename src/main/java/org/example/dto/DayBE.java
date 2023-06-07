@@ -3,7 +3,9 @@ package org.example.dto;
 import lombok.Data;
 import org.example.utils.TextUtils;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class DayBE {
@@ -32,6 +34,7 @@ public class DayBE {
     String candleLighting;
     String tzaisSabath;
     String tzaisYomTov;
+    List<EventFE> eventFEList;
 
     public void setYearHeb(String yearHeb) {
         this.yearHeb = TextUtils.setDirectionRtl(yearHeb);
@@ -66,4 +69,5 @@ public class DayBE {
     public void setTzaisYomTov(String tzaisYomTov) {this.tzaisYomTov = tzaisYomTov + TextUtils.setDirectionRtl(TZAIS_YOM_TOV);}
 
     public void setParsha(String parsha) {this.parsha = TextUtils.setDirectionRtl(parsha);}
+
 }

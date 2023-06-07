@@ -8,6 +8,7 @@ public class DayFE {
     Cell day;
     Cell dayTimes;
     Cell dayData;
-    Cell dayEvents;
+    Cell dayEvent1;
+    Cell dayEvent2;
     Cell dayHeb;
 }

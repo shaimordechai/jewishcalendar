@@ -17,11 +17,11 @@ import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.properties.*;
 import lombok.Data;
 import org.example.dto.DayBE;
+import org.example.dto.EventFE;
 import org.example.dto.WeekBE;
 import org.example.dto.WeekCalBE;
 import org.example.fe.weekCal.DayFE;
 import org.example.fe.weekCal.WeekFE;
-import org.example.utils.TextUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -41,11 +41,12 @@ public class WeekCalendarService {
     private static final int NUM_COLUMNS_DAY = 3;
     private static final int NUM_RAWS_DAY = 3;
     private static final int WEEK_PAGE_MARGINS = 3;
+    private static final int MAX_EVENT = 2;
     private static FontProgram fontProgram;
 
     static {
         try {
-            fontProgram = FontProgramFactory.createFont("Alef.ttf");
+            fontProgram = FontProgramFactory.createFont("font.ttf");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -129,24 +130,17 @@ public class WeekCalendarService {
         weekFE.setDays(createDays(weekBE.getDays()));
 
         res.addCell(weekFE.getMonth())
-                        .addCell(weekFE.getMontHeb());
+                .addCell(weekFE.getMontHeb());
         weekFE.getDays().forEach(item -> {
             res.addCell(item.getDay())
                     .addCell(item.getDayTimes())
                     .addCell(item.getDayData())
-                    .addCell(item.getDayEvents())
+                    .addCell(item.getDayEvent1())
+                    .addCell(item.getDayEvent2())
                     .addCell(item.getDayHeb());
         });
 
         return res;
-
-        /*createTitle(week, weekBE);
-
-        for (int i = 0; i < 7; i++) {
-            createDay1(week, weekBE.getDays().get(i));
-        }
-
-        return week;*/
     }
 
     private List<DayFE> createDays(List<DayBE> days) {
@@ -160,7 +154,12 @@ public class WeekCalendarService {
         res.setDay(createDayCell(dayBE));
         res.setDayTimes(createTimesCell(dayBE));
         res.setDayData(createDayDataCell(dayBE));
-        res.setDayEvents(createDayEventCell(dayBE));
+        if(dayBE.getEventFEList() == null || dayBE.getEventFEList().size() <= MAX_EVENT){
+            res.setDayEvent2(createDayEventCell(dayBE, 1));
+            res.setDayEvent1(createDayEventCell(dayBE, 0));
+        }else{
+
+        }
         res.setDayHeb(createDayHebCell(dayBE));
         return res;
     }
@@ -185,29 +184,35 @@ public class WeekCalendarService {
                 .add(p2);
     }
 
-    private Cell createDayEventCell(DayBE dayBE) {
-        Text text1 = new Text("test").setFont(alefFont).setFontSize(fontDaySize);
-        Paragraph p1 = new Paragraph()
-                .add(text1);
-        Image image = null;
-        try {
-            image = new Image(ImageDataFactory.create("test.jpg")).setHeight(imageSize).setWidth(imageSize);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        Paragraph p2 = new Paragraph()
-                .add(image);
-
-        return new Cell(1, 2)
+    private Cell createDayEventCell(DayBE dayBE, int index) {
+        Cell res = new Cell(1, 1)
                 .setHeight(lineHeight)
                 .setBorder(null)
                 .setBorderBottom(new DashedBorder(0.5f))
                 .setTextAlignment(TextAlignment.RIGHT)
                 .setVerticalAlignment(VerticalAlignment.TOP)
-                .setBackgroundColor(createDayColor(dayBE))
-                .add(p1)
-                .add(p2);
-
+                .setBackgroundColor(createDayColor(dayBE));
+        Paragraph p1 = new Paragraph();
+        Paragraph p2 = new Paragraph();
+        try {
+            EventFE eventFE = dayBE.getEventFEList().get(index);
+            Text text = new Text(eventFE.getText()).setFont(alefFont).setFontSize(fontTimesSize);
+            p1.add(text);
+            Image image = null;
+            image = new Image(ImageDataFactory.create(eventFE.getPath())).setHeight(imageSize).setWidth(imageSize).setBorderRadius(new BorderRadius(10));
+            p2.add(image);
+            res.add(p1);
+            try {
+                res.add(p2);
+            }catch (Exception e){
+                int a = 1;
+            }
+            return res;
+        } catch (Exception e) {
+            res.add(p1);
+            res.add(p2);
+            return res;
+        }
     }
 
     private Cell createDayDataCell(DayBE dayBE) {
@@ -221,7 +226,7 @@ public class WeekCalendarService {
                 .setBorder(null)
                 .setBorderBottom(new DashedBorder(0.5f))
                 .setTextAlignment(TextAlignment.RIGHT)
-                .setVerticalAlignment(VerticalAlignment.MIDDLE)
+                .setVerticalAlignment(VerticalAlignment.BOTTOM)
                 .setBackgroundColor(createDayColor(dayBE));
         p.forEach(item -> {
             res.add(item);
@@ -238,7 +243,7 @@ public class WeekCalendarService {
                 .setHeight(lineHeight)
                 .setBorder(null)
                 .setBorderBottom(new DashedBorder(0.5f))
-                .setTextAlignment(TextAlignment.RIGHT)
+                .setTextAlignment(TextAlignment.LEFT)
                 .setVerticalAlignment(VerticalAlignment.BOTTOM)
                 .setBackgroundColor(createDayColor(dayBE));
         p.forEach(item -> {
@@ -292,7 +297,7 @@ public class WeekCalendarService {
         this.fontTitleSize = pageSize.getWidth()/17;
         this.fontDaySize = pageSize.getWidth()/40;
         this.fontTimesSize = pageSize.getWidth()/53;
-        this.imageSize = pageSize.getWidth()/15;
+        this.imageSize = pageSize.getWidth()/10;
         this.fontDateSize = pageSize.getWidth()/15;
         this.lineHeight = (pageSize.getHeight() - 2 * WEEK_PAGE_MARGINS)/9*0.9f;
 
