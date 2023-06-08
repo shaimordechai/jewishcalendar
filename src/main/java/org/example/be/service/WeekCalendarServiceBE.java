@@ -26,6 +26,7 @@ public class WeekCalendarServiceBE {
 
     private final String WEEK_CAL_TITLE = "יעובש חול תנשל";
     private final String SPACE = " ";
+    private final String REGION = " הלוח לפי אופק ";
     private final int WEEK_SIZE = 7;
     private final AtomicInteger counter = new AtomicInteger();
     private final Locale hebrewLocale = new Locale("he", "IL"); // Hebrew locale
@@ -44,6 +45,10 @@ public class WeekCalendarServiceBE {
         WeekCalBE res = new WeekCalBE();
         resetCalendar();
         hebrewDateFormatter.setHebrewFormat(true);
+        hebrewDateFormatter.setLongWeekFormat(true);
+        hebrewDateFormatter.setUseFinalFormLetters(true);
+        hebrewDateFormatter.setUseLongHebrewYears(false);
+        hebrewDateFormatter.setUseGershGershayim(false);
         List<WeekBE> weekBEList = new ArrayList<>();
         Region region = Region.fromName(regionName);
         GeoLocation geoLocation = new GeoLocation(region.getName(), region.getLatitude(), region.getLongitude(), region.getElevation(), region.getTimeZone());
@@ -95,7 +100,8 @@ public class WeekCalendarServiceBE {
             zmanimCalendar.setCalendar(jewishCalendar.getGregorianCalendar());
             DayBE day = new DayBE();
             day.setDate(jewishCalendar.getGregorianCalendar().getTime());
-            day.setYear(jewishCalendar.getLocalDate().format(yearFormatter));
+            day.setCurrentYear(jewishCalendar.getJewishYear() == year);
+            day.setYear(String.valueOf(jewishCalendar.getGregorianYear()));
             day.setMonth(jewishCalendar.getLocalDate().format(monthFormatter));
             day.setMonthHeb(hebrewDateFormatter.formatMonth(jewishCalendar));
             day.setYearHeb(hebrewDateFormatter.formatHebrewNumber(jewishCalendar.getJewishYear()));
@@ -110,6 +116,7 @@ public class WeekCalendarServiceBE {
             day.setShabath(jewishCalendar.getDayOfWeek() == 7);
             day.setRoshChodesh(hebrewDateFormatter.formatRoshChodesh(jewishCalendar));
             day.setYomTovName(hebrewDateFormatter.formatYomTov(jewishCalendar));
+            day.setDafYomiBavli(hebrewDateFormatter.formatDafYomiBavli(jewishCalendar.getDafYomiBavli()));
             if(jewishCalendar.hasCandleLighting()){
                 day.setCandleLighting(LocalDateTime.ofInstant(
                         zmanimCalendar.getCandleLighting().toInstant()
@@ -136,7 +143,9 @@ public class WeekCalendarServiceBE {
                     eventFE.setText(TextUtils.createEventText(item, years));
                     eventFEList.add(eventFE);
                 });
-                day.setEventFEList(eventFEList);
+                if(jewishCalendar.getJewishYear() == year){
+                    day.setEventFEList(eventFEList);
+                }
             }
             days.add(day);
             jewishCalendar.setDate(jewishCalendar.getLocalDate().plusDays(1));
@@ -149,8 +158,11 @@ public class WeekCalendarServiceBE {
         weeks.forEach(w -> {
             WeekBE weekBE = new WeekBE();
             weekBE.setDays(w);
-            weekBE.setMonth(createMonth(w.get(0).getMonth(), w.get(6).getMonth()));
-            weekBE.setMonthHeb(createMonth(w.get(0).getMonthHeb(), w.get(6).getMonthHeb()));
+            weekBE.setMonth(createPeriod(w.get(0).getMonth(), w.get(6).getMonth()));
+            weekBE.setMonthHeb(createPeriod(w.get(0).getMonthHeb(), w.get(6).getMonthHeb()));
+            weekBE.setYear(createPeriod(w.get(0).getYear(), w.get(6).getYear()));
+            weekBE.setYearHeb(createPeriod(w.get(0).getYearHeb(), w.get(6).getYearHeb()));
+            weekBE.setAdditionalData(createAdditionalData(w, region));
             weekBEList.add(weekBE);
         });
 
@@ -158,6 +170,20 @@ public class WeekCalendarServiceBE {
         res.setTitle(createTitle(hebrewDateFormatter.formatHebrewNumber(year)));
         return res;
 
+    }
+
+    private List<String> createAdditionalData(List<DayBE> w, Region region) {
+        List<String> res = new ArrayList<>();
+        res.add(TextUtils.setDirectionRtl(REGION + SPACE + region.getName()));
+        String dafYomiBavli = createPeriod(w.get(0).getDafYomiBavli(), w.get(6).getDafYomiBavli());
+        List<String> dafYomiBavliList = Arrays.stream(dafYomiBavli.split(SPACE)).collect(Collectors.toList());
+        /*Collections.reverse(dafYomiBavliList);
+        dafYomiBavliList = dafYomiBavliList.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        Collections.reverse(dafYomiBavliList);*/
+        res.add(dafYomiBavli);
+        return res;
     }
 
     private void resetCalendar() {
@@ -185,9 +211,9 @@ public class WeekCalendarServiceBE {
         return sb.toString();
     }
 
-    private String createMonth(String start, String end) {
-        return Stream.of(start, end)
+    private String createPeriod(String start, String end) {
+        return Stream.of(end, start)
                 .distinct()
-                .collect(Collectors.joining("-"));
+                .collect(Collectors.joining(SPACE + "-" + SPACE));
     }
 }

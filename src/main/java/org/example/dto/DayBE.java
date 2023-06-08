@@ -27,6 +27,7 @@ public class DayBE {
     String sunrise;
     String sunset;
     String parsha;
+    String specialParsha;
     boolean isShabath;
     boolean isYomTov;
     String roshChodesh;
@@ -35,6 +36,8 @@ public class DayBE {
     String tzaisSabath;
     String tzaisYomTov;
     List<EventFE> eventFEList;
+    boolean isCurrentYear;
+    String dafYomiBavli;
 
     public void setYearHeb(String yearHeb) {
         this.yearHeb = TextUtils.setDirectionRtl(yearHeb);
@@ -70,4 +73,19 @@ public class DayBE {
 
     public void setParsha(String parsha) {this.parsha = TextUtils.setDirectionRtl(parsha);}
 
+    public void setYomTovName(String yomTovName) {
+        this.yomTovName = TextUtils.setDirectionRtl(yomTovName);
+    }
+
+    public void setSpecialParsha(String specialParsha) {
+        this.specialParsha = TextUtils.setDirectionRtl(specialParsha);
+    }
+
+    public void setRoshChodesh(String roshChodesh) {
+        this.roshChodesh = TextUtils.setDirectionRtl(roshChodesh);
+    }
+
+    public void setDafYomiBavli(String dafYomiBavli) {
+        this.dafYomiBavli = TextUtils.setDirectionRtl(dafYomiBavli);
+    }
 }

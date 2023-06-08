@@ -10,5 +10,6 @@ public class DayFE {
     Cell dayData;
     Cell dayEvent1;
     Cell dayEvent2;
+    Cell dayEvent;
     Cell dayHeb;
 }

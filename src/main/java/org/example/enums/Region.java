@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.TimeZone;
 
 public enum Region {
-    JERUSALEM("ירושלים", 31.76832, 35.21371, 769.0, TimeZone.getTimeZone("Asia/Jerusalem"), true, 40.0);
+    JERUSALEM("ירושלים", 31.767, 35.233, 686.0, TimeZone.getTimeZone("Asia/Jerusalem"), true, 40.0);
 
     private String name;
     private double latitude;

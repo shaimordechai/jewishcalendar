@@ -29,15 +29,15 @@ public class Main {
         EventBE event1 = new EventBE();
         event1.setEvent(Event.WEDDINGDAY);
         event1.setName("שי ויאירה");
-        event1.setPath("test.jpg");
+        event1.setPath("1.png");
         Calendar cal = Calendar.getInstance();
-        cal.set(1984, Calendar.MARCH, 20);
+        cal.set(2006, Calendar.MARCH, 22);
         event1.setDate(cal.getTime());
         eventBEList.add(event1);
-        eventBEList.add(event1);
+        //eventBEList.add(event1);
 
         WeekCalBE weekCalBE = beService.createWeekBECal(5784, "ירושלים", eventBEList);
-        PageSize size = PageSize.A6;
+        PageSize size = PageSize.A4;
         List<Table> weekCal = feService.createWeekCal(weekCalBE, size);
         feService.createPdf(weekCal, PATH, size);
 
