@@ -34,7 +34,7 @@ public class WeekCalendarServiceBE {
     private final SimpleDateFormat dayAndMonthFormatter = new SimpleDateFormat("dd/MM");
     private final DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMMM", hebrewLocale);
     private final DateTimeFormatter yearFormatter = DateTimeFormatter.ofPattern("YYYY", hebrewLocale);
-    private final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE", locale);
+    private final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE", Locale.UK);
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH.mm", locale);
     private final HebrewDateFormatter hebrewDateFormatter = new HebrewDateFormatter();
     private final JewishCalendar jewishCalendar = new JewishCalendar();
